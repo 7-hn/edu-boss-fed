@@ -29,6 +29,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapMutations } from 'vuex'
 import { Form } from 'element-ui'
 import { login } from '@/api/login'
 
@@ -71,6 +72,7 @@ export default Vue.extend({
     }
   },
   methods: {
+    ...mapMutations(['setUser']),
     async onSubmit () {
       try {
         await (this.$refs.form as Form).validate()
@@ -78,11 +80,12 @@ export default Vue.extend({
         const { data } = await login(this.formData)
         if (data.state !== 1) {
           return this.$message.error(data.message)
+        } else {
+          // 登录成功，记录登录状态，状态需要能够全局访问（放到 vuex）
+          this.setUser(data.content)
+          this.$router.push(this.$route.query.redirect as string || '/')
+          this.$message.success(data.message)
         }
-        this.$router.push({
-          name: 'home'
-        })
-        this.$message.success(data.message)
       } catch (e) {}
       this.loginLoading = false
     }

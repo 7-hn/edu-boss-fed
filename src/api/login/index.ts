@@ -2,7 +2,7 @@
  * 登录接口 api
  */
 import qs from 'qs'
-import instance from '@/utils/request.ts'
+import instance from '@/utils/request'
 import { AxiosPromise } from 'axios'
 
 interface formData {

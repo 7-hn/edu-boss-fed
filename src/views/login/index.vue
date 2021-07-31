@@ -31,7 +31,7 @@
 import Vue from 'vue'
 import { mapMutations } from 'vuex'
 import { Form } from 'element-ui'
-import { login } from '@/api/login'
+import { login } from '@/api/user'
 
 export default Vue.extend({
   name: 'LoginIndex',

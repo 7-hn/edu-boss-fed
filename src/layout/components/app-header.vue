@@ -11,11 +11,11 @@
         <el-avatar
           shape="square"
           size="medium"
-          src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"></el-avatar>
+          :src="userInfo.portrait || require('@/assets/default-avatar.jpeg')"></el-avatar>
         <i class="el-icon-arrow-down el-icon--right"></i>
       </span>
       <el-dropdown-menu slot="dropdown">
-        <el-dropdown-item>用户 ID</el-dropdown-item>
+        <el-dropdown-item>{{ userInfo.userName }}</el-dropdown-item>
         <el-dropdown-item divided>退出</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
@@ -24,9 +24,24 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { getUserInfo } from '@/api/user'
 
 export default Vue.extend({
-  name: 'AppHeader'
+  name: 'AppHeader',
+  data () {
+    return {
+      userInfo: {}
+    }
+  },
+  created () {
+    this.loadUserInfo()
+  },
+  methods: {
+    async loadUserInfo () {
+      const { data } = await getUserInfo()
+      this.userInfo = data.content
+    }
+  }
 })
 </script>
 

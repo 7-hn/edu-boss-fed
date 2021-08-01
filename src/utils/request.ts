@@ -44,7 +44,19 @@ function redirectLogin () {
   })
 }
 
+function refreshToken () {
+  return axios.create()({
+    method: 'POST',
+    url: '/front/user/refresh_token',
+    data: qs.stringify({
+      refreshtoken: store.state.user.refresh_token
+    })
+  })
+}
+
 // 响应拦截器
+let isRefreshing = false // 是否正在刷新 token
+let requests: (() => void)[] = [] // 存储刷新 token 期间过来的 401 请求
 instance.interceptors.response.use(response => {
   return response
 }, async error => {
@@ -58,28 +70,42 @@ instance.interceptors.response.use(response => {
         redirectLogin()
         return Promise.reject(error)
       }
+
       // 尝试刷新获取新的 token
       // 使用新的 axios 实例去请求，以防出现循环 401 现象
-      try {
-        const { data } = await axios.create()({
-          method: 'POST',
-          url: '/front/user/refresh_token',
-          data: qs.stringify({
-            refreshtoken: store.state.user.refresh_token
-          })
+      if (!isRefreshing) {
+        isRefreshing = true
+        return refreshToken().then(res => {
+          if (!res.data.success) throw new Error('刷新 token 失败')
+          // 成功了 => 把本次失败的请求重新发出去
+          // 把刷新拿到的新的 access_token 更新到容器和本地存储中
+          store.commit('setUser', res.data.content)
+          // 把 requests 队列中的请求重新发出去
+          requests.forEach(cb => cb())
+          // 重置 requests 数组
+          requests = []
+          // 把第一次失败的请求重新发出去
+          return instance(error.config)
+        }).catch((e) => {
+          console.log(e)
+          // 清除当前登录状态
+          store.commit('setUser', null)
+          // 请求 refresh_token 失败
+          // 失败了 => 跳转到 login 页面
+          redirectLogin()
+          return Promise.reject(error)
+        }).finally(() => {
+          isRefreshing = false
         })
-        // 成功了 => 把本次失败的请求重新发出去
-        // 把刷新拿到的新的 access_token 更新到容器和本地存储中
-        store.commit('setUser', data.content)
-        // 把本次失败的请求重新发出去
-        return instance(error.config)
-      } catch (e) {
-        // 清除当前登录状态
-        store.commit('setUser', null)
-        // 请求 refresh_token 失败
-        // 失败了 => 跳转到 login 页面
-        redirectLogin()
       }
+
+      // 刷新状态下，把请求挂起放到 requests 数组中
+      // 第一次的不会存储到这里： 88 行代码
+      return new Promise(resolve => {
+        requests.push(() => {
+          resolve(instance(error.config))
+        })
+      })
     } else if (status === 403) {
       Message.error('没有权限，请联系管理员')
     } else if (status === 404) {

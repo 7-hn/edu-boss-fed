@@ -34,3 +34,30 @@ export const getEditMenuInfo = (id = -1): AxiosPromise => {
     }
   })
 }
+
+// 获取菜单列表
+export const getMenuNodeList = (): AxiosPromise => {
+  return instance({
+    method: 'GET',
+    url: '/boss/menu/getMenuNodeList'
+  })
+}
+
+// 删除菜单列表
+export const deleteMenu = (id: number): AxiosPromise => {
+  return instance({
+    method: 'DELETE',
+    url: `/boss/menu/${id}`
+  })
+}
+
+// 编辑菜单列表
+export const editLoadMenu = (id: number): AxiosPromise => {
+  return instance({
+    method: 'GET',
+    url: '/boss/menu/getEditMenuInfo',
+    params: {
+      id
+    }
+  })
+}

@@ -12,11 +12,8 @@ const routes: Array<RouteConfig> = [
     name: 'login',
     component: () => import(/* webpackChunkName: 'login' */ '@/views/login/index.vue')
   }, {
-    path: '*',
-    name: '404',
-    component: () => import(/* webpackChunkName: '404' */ '@/views/error-page/404.vue')
-  }, {
     path: '/',
+    // 嵌套路由的父路由 name 没有意义
     component: Layout,
     // meta 默认就是一个空对象（不设置就是空对象）
     meta: {
@@ -24,7 +21,7 @@ const routes: Array<RouteConfig> = [
     },
     children: [
       {
-        path: '', // 默认子路由
+        path: '', // path 为''，默认子路由
         name: 'home',
         component: () => import(/* webpackChunkName: 'home' */ '@/views/home/index.vue')
       }, {
@@ -61,6 +58,11 @@ const routes: Array<RouteConfig> = [
         component: () => import(/* webpackChunkName: 'menu-create' */ '@/views/menu/create.vue')
       }
     ]
+  }, {
+    // 现版本不需要必须将 * 放在最后了, 不过还是建议写在最后
+    path: '*',
+    name: '404',
+    component: () => import(/* webpackChunkName: '404' */ '@/views/error-page/404.vue')
   }
 ]
 

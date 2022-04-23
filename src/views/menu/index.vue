@@ -12,7 +12,6 @@
         :data="menus"
         style="width: 100%"
         row-key="id"
-        default-expand-all
         :tree-props="{children: 'subMenuList'}"
       >
         <el-table-column
@@ -41,7 +40,7 @@
           label="排序">
         </el-table-column>
         <el-table-column label="操作" align="center">
-          <template slot-scope="{ row }">
+          <template #default="{ row }">
             <el-button
               size="mini"
               type="text"
@@ -84,12 +83,17 @@ export default Vue.extend({
     // 添加菜单
     createMenu () {
       this.$router.push({
-        name: 'create'
+        name: 'menu-create'
       })
     },
     // 编辑
-    handleEdit (id: number) {
-      console.log(id)
+    handleEdit (id: any) {
+      this.$router.push({
+        name: 'menu-edit',
+        params: {
+          id
+        }
+      })
     },
     // 删除
     handleDelete (id: number) {
@@ -101,6 +105,7 @@ export default Vue.extend({
         const { data } = await deleteMenu(id)
         if (data.code === '000000') {
           this.$message.success(data.mesg)
+          this.loadMenuNodeList()
         } else {
           this.$message.error(data.mesg)
         }

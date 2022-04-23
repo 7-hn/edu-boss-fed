@@ -25,7 +25,7 @@ export const createOrUpdateMenu = (data: createMenuData): AxiosPromise => {
 }
 
 // 获取编辑菜单页面信息
-export const getEditMenuInfo = (id = -1): AxiosPromise => {
+export const getEditMenuInfo = (id: string | number = -1): AxiosPromise => {
   return instance({
     method: 'GET',
     url: '/boss/menu/getEditMenuInfo',

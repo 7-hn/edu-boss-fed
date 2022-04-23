@@ -35,6 +35,7 @@ instance.interceptors.request.use(config => {
  *    缺点：会消耗多一次请求，耗流量
  */
 
+// 重定向到 login 页面
 function redirectLogin () {
   router.push({
     name: 'login',
@@ -44,7 +45,9 @@ function redirectLogin () {
   })
 }
 
+// 刷新 token
 function refreshToken () {
+  // 使用新的 axios 实例去请求，以防出现循环 401 现象
   return axios.create()({
     method: 'POST',
     url: '/front/user/refresh_token',
@@ -54,13 +57,16 @@ function refreshToken () {
   })
 }
 
+// 是否正在刷新 token
+let isRefreshing = false
+// 存储刷新 token 期间过来的 401 请求
+let requests: (() => void)[] = []
 // 响应拦截器
-let isRefreshing = false // 是否正在刷新 token
-let requests: (() => void)[] = [] // 存储刷新 token 期间过来的 401 请求
 instance.interceptors.response.use(response => {
   return response
 }, async error => {
-  if (error.response) { // 请求发出去收到响应了，但是状态码超出了 2xx 范围
+  if (error.response) {
+    // 请求发出去收到响应了，但是状态码超出了 2xx 范围
     const { status } = error.response
     if (status === 400) {
       Message.error('请求参数错误')
@@ -74,6 +80,7 @@ instance.interceptors.response.use(response => {
       // 尝试刷新获取新的 token
       // 使用新的 axios 实例去请求，以防出现循环 401 现象
       if (!isRefreshing) {
+        // 开启刷新状态
         isRefreshing = true
         return refreshToken().then(res => {
           if (!res.data.success) throw new Error('刷新 token 失败')
@@ -95,6 +102,7 @@ instance.interceptors.response.use(response => {
           redirectLogin()
           return Promise.reject(error)
         }).finally(() => {
+          // 重置刷新状态
           isRefreshing = false
         })
       }
@@ -113,7 +121,8 @@ instance.interceptors.response.use(response => {
     } else if (status >= 500) {
       Message.error('服务端错误，请联系管理员')
     }
-  } else if (error.request) { // 请求发出去没有收到响应
+  } else if (error.request) {
+    // 请求发出去没有收到响应
     Message.error('请求超时，请刷新重试')
   } else { // 在设置请求时发生了一些事情，触发了一个错误
     Message.error('请求失败：' + error.message)

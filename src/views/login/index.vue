@@ -79,15 +79,18 @@ export default Vue.extend({
         this.loginLoading = true
         const { data } = await login(this.formData)
         if (data.state !== 1) {
-          return this.$message.error(data.message)
+          this.$message.error(data.message)
         } else {
           // 登录成功，记录登录状态，状态需要能够全局访问（放到 vuex）
           this.setUser(data.content)
           this.$router.push(this.$route.query.redirect as string || '/')
           this.$message.success(data.message)
         }
-      } catch (e) {}
-      this.loginLoading = false
+      } catch {
+        console.log('校验失败')
+      } finally {
+        this.loginLoading = false
+      }
     }
   }
 })
